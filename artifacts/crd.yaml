@@ -12,3 +12,13 @@ spec:
     kind: Sample
     shortNames:
       - smp
+  validation:
+    openAPIV3Schema:
+      type: object
+      properties:
+        spec:
+          properties:
+            time:
+              type: string
+          required:
+            - time
