@@ -12,6 +12,14 @@ spec:
     kind: Sample
     shortNames:
       - smp
+  additionalPrinterColumns:
+    - name: message
+      type: string
+      description: message content which want to show
+      JSONPath: .status.message
+    - name: AGE
+      type: date
+      JSONPath: .metadata.creationTimestamp
   validation:
     openAPIV3Schema:
       type: object
