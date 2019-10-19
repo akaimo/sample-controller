@@ -12,6 +12,8 @@ spec:
     kind: Sample
     shortNames:
       - smp
+  subresources:
+    status: {}
   additionalPrinterColumns:
     - name: message
       type: string
