@@ -15,5 +15,5 @@ type SampleResource struct {
 }
 
 type SampleResourceSpec struct {
-	PodImage string `json:"podImage"`
+	Time string `json:"time"`
 }
