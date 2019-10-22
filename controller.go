@@ -89,5 +89,11 @@ func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 }
 
 func (c *Controller) enqueueSampleResource(obj interface{}) {
-
+	var key string
+	var err error
+	if key, err = cache.MetaNamespaceKeyFunc(obj); err != nil {
+		utilruntime.HandleError(err)
+		return
+	}
+	c.workqueue.Add(key)
 }
