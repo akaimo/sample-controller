@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	clientset "github.com/akaimo/sample-controller/pkg/client/clientset/versioned"
 	samplescheme "github.com/akaimo/sample-controller/pkg/client/clientset/versioned/scheme"
 	informers "github.com/akaimo/sample-controller/pkg/client/informers/externalversions/samplecontroller/v1"
 	listers "github.com/akaimo/sample-controller/pkg/client/listers/samplecontroller/v1"
 	corev1 "k8s.io/api/core/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/apimachinery/pkg/util/wait"
 	jobinformers "k8s.io/client-go/informers/batch/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -16,6 +18,7 @@ import (
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog"
+	"time"
 )
 
 const controllerAgentName = "sample-controller"
@@ -85,7 +88,35 @@ func NewController(
 // is closed, at which point it will shutdown the workqueue and wait for
 // workers to finish processing their current work items.
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
+	defer utilruntime.HandleCrash()
+	defer c.workqueue.ShutDown()
+
+	klog.Info("Starting sample controller")
+
+	klog.Info("Waiting for informer caches to sync")
+	if ok := cache.WaitForCacheSync(stopCh, c.sampleResourceSynced); !ok {
+		return fmt.Errorf("failed to wait for caches to sync")
+	}
+
+	klog.Info("Starting workers")
+	for i := 0; i < threadiness; i++ {
+		go wait.Until(c.runWorker, time.Second, stopCh)
+	}
+
+	klog.Info("Started workers")
+	<-stopCh
+	klog.Info("Shutting down workers")
+
 	return nil
+}
+
+func (c *Controller) runWorker() {
+	for c.processNextWorkItem() {
+	}
+}
+
+func (c *Controller) processNextWorkItem() bool {
+	return true
 }
 
 func (c *Controller) enqueueSampleResource(obj interface{}) {
