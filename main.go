@@ -52,6 +52,10 @@ func main() {
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
 	kubeInformerFactory.Start(stopCh)
 	exampleInformerFactory.Start(stopCh)
+
+	if err = controller.Run(2, stopCh); err != nil {
+		klog.Fatalf("Error running controller: %s", err.Error())
+	}
 }
 
 func init() {
