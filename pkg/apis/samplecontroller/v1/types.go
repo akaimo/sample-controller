@@ -17,3 +17,12 @@ type SampleResource struct {
 type SampleResourceSpec struct {
 	Time string `json:"time"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
+
+type SampleResourceList struct {
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata"`
+
+	Items []SampleResource `json:"items"`
+}
