@@ -69,6 +69,14 @@ func NewController(
 		recorder:             recorder,
 	}
 
+	klog.Info("Setting up event handlers")
+	sampleinformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.enqueueSampleResource,
+		UpdateFunc: func(old, new interface{}) {
+			controller.enqueueSampleResource(new)
+		},
+	})
+
 	return controller
 }
 
@@ -78,4 +86,8 @@ func NewController(
 // workers to finish processing their current work items.
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	return nil
+}
+
+func (c *Controller) enqueueSampleResource(obj interface{}) {
+
 }
