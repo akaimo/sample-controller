@@ -5,3 +5,7 @@ codegen:
 		github.com/akaimo/sample-controller/pkg/apis \
 		samplecontroller:v1 \
 		--go-header-file  hack/boilerplate.go.txt
+
+.PHONY: run
+run:
+	go run . -kubeconfig=${HOME}/.kube/config
