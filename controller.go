@@ -178,10 +178,11 @@ func (c *Controller) syncHandler(key string) error {
 	if err != nil {
 		return err
 	}
+	m := jobManager{now:time.Now(), deletedDuration:duration}
 	var deleteList []*batchv1.Job
 
 	for _, v := range jobList {
-		if isDeletable(v, duration, time.Now()) {
+		if m.isDeletable(v) {
 			deleteList = append(deleteList, v)
 		}
 	}
@@ -202,6 +203,11 @@ func (c *Controller) enqueueSampleResource(obj interface{}) {
 	c.workqueue.Add(key)
 }
 
-func isDeletable(j *batchv1.Job, d time.Duration, now time.Time) bool {
-	return now.After(j.Status.CompletionTime.Add(d))
+type jobManager struct {
+	now             time.Time
+	deletedDuration time.Duration
+}
+
+func (m jobManager) isDeletable(j *batchv1.Job) bool {
+	return m.now.After(j.Status.CompletionTime.Add(m.deletedDuration))
 }
