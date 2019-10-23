@@ -6,6 +6,7 @@ import (
 	samplescheme "github.com/akaimo/sample-controller/pkg/client/clientset/versioned/scheme"
 	informers "github.com/akaimo/sample-controller/pkg/client/informers/externalversions/samplecontroller/v1"
 	listers "github.com/akaimo/sample-controller/pkg/client/listers/samplecontroller/v1"
+	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
@@ -173,6 +174,21 @@ func (c *Controller) syncHandler(key string) error {
 	jobList, err := c.jobLister.Jobs(sr.Namespace).List(labels.Everything())
 	klog.Info(jobList)
 
+	duration, err := time.ParseDuration(sr.Spec.Time)
+	if err != nil {
+		return err
+	}
+	var deleteList []*batchv1.Job
+
+	for _, v := range jobList {
+		if isDeletable(v, duration, time.Now()) {
+			deleteList = append(deleteList, v)
+		}
+	}
+	klog.Info(deleteList)
+
+	// TODO: delete job
+
 	return nil
 }
 
@@ -184,4 +200,8 @@ func (c *Controller) enqueueSampleResource(obj interface{}) {
 		return
 	}
 	c.workqueue.Add(key)
+}
+
+func isDeletable(j *batchv1.Job, d time.Duration, now time.Time) bool {
+	return now.After(j.Status.CompletionTime.Add(d))
 }
