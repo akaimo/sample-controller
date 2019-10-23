@@ -116,7 +116,43 @@ func (c *Controller) runWorker() {
 }
 
 func (c *Controller) processNextWorkItem() bool {
+	obj, shutdown := c.workqueue.Get()
+
+	if shutdown {
+		return false
+	}
+
+	err := func(obj interface{}) error {
+		defer c.workqueue.Done(obj)
+
+		var key string
+		var ok bool
+		if key, ok = obj.(string); !ok {
+			c.workqueue.Forget(obj)
+			utilruntime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", obj))
+			return nil
+		}
+
+		if err := c.syncHandler(key); err != nil {
+			c.workqueue.AddRateLimited(key)
+			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
+		}
+
+		c.workqueue.Forget(obj)
+		klog.Infof("Successfully synced '%s'", key)
+		return nil
+	}(obj)
+
+	if err != nil {
+		utilruntime.HandleError(err)
+		return true
+	}
+
 	return true
+}
+
+func (c *Controller) syncHandler(key string) error {
+	return nil
 }
 
 func (c *Controller) enqueueSampleResource(obj interface{}) {
