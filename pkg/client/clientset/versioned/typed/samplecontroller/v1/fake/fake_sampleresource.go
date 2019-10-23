@@ -14,13 +14,13 @@ import (
 
 // FakeSampleResources implements SampleResourceInterface
 type FakeSampleResources struct {
-	Fake *FakeExampleV1
+	Fake *FakeSamplecontrollerV1
 	ns   string
 }
 
-var sampleresourcesResource = schema.GroupVersionResource{Group: "example.com", Version: "v1", Resource: "sampleresources"}
+var sampleresourcesResource = schema.GroupVersionResource{Group: "samplecontroller.k8s.io", Version: "v1", Resource: "sampleresources"}
 
-var sampleresourcesKind = schema.GroupVersionKind{Group: "example.com", Version: "v1", Kind: "SampleResource"}
+var sampleresourcesKind = schema.GroupVersionKind{Group: "samplecontroller.k8s.io", Version: "v1", Kind: "SampleResource"}
 
 // Get takes name of the sampleResource, and returns the corresponding sampleResource object, and an error if there is any.
 func (c *FakeSampleResources) Get(name string, options v1.GetOptions) (result *samplecontrollerv1.SampleResource, err error) {

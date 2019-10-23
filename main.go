@@ -46,7 +46,7 @@ func main() {
 
 	controller := NewController(kubeClient, exampleClient,
 		kubeInformerFactory.Batch().V1().Jobs(),
-		exampleInformerFactory.Example().V1().SampleResources())
+		exampleInformerFactory.Samplecontroller().V1().SampleResources())
 
 	// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(stopCh)
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.

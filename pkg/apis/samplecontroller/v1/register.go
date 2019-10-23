@@ -5,10 +5,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	samplecontroller "github.com/akaimo/sample-controller/pkg/apis/samplecontroller"
+	"github.com/akaimo/sample-controller/pkg/apis/samplecontroller"
 )
 
-var SchemeGroupVersion = schema.GroupVersion{Group: samplecontroller.GroupName, Version: "v1alpha1"}
+var SchemeGroupVersion = schema.GroupVersion{Group: samplecontroller.GroupName, Version: "v1"}
 
 func Kind(kind string) schema.GroupKind {
 	return SchemeGroupVersion.WithKind(kind).GroupKind()

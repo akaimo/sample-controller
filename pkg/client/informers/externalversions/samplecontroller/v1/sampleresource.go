@@ -45,13 +45,13 @@ func NewFilteredSampleResourceInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ExampleV1().SampleResources(namespace).List(options)
+				return client.SamplecontrollerV1().SampleResources(namespace).List(options)
 			},
 			WatchFunc: func(options metav1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.ExampleV1().SampleResources(namespace).Watch(options)
+				return client.SamplecontrollerV1().SampleResources(namespace).Watch(options)
 			},
 		},
 		&samplecontrollerv1.SampleResource{},

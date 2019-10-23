@@ -3,7 +3,7 @@
 package fake
 
 import (
-	examplev1 "github.com/akaimo/sample-controller/pkg/apis/samplecontroller/v1"
+	samplecontrollerv1 "github.com/akaimo/sample-controller/pkg/apis/samplecontroller/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -15,7 +15,7 @@ var scheme = runtime.NewScheme()
 var codecs = serializer.NewCodecFactory(scheme)
 var parameterCodec = runtime.NewParameterCodec(scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	examplev1.AddToScheme,
+	samplecontrollerv1.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

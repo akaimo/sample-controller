@@ -4,8 +4,8 @@ package fake
 
 import (
 	clientset "github.com/akaimo/sample-controller/pkg/client/clientset/versioned"
-	examplev1 "github.com/akaimo/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1"
-	fakeexamplev1 "github.com/akaimo/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1/fake"
+	samplecontrollerv1 "github.com/akaimo/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1"
+	fakesamplecontrollerv1 "github.com/akaimo/sample-controller/pkg/client/clientset/versioned/typed/samplecontroller/v1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -60,7 +60,7 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var _ clientset.Interface = &Clientset{}
 
-// ExampleV1 retrieves the ExampleV1Client
-func (c *Clientset) ExampleV1() examplev1.ExampleV1Interface {
-	return &fakeexamplev1.FakeExampleV1{Fake: &c.Fake}
+// SamplecontrollerV1 retrieves the SamplecontrollerV1Client
+func (c *Clientset) SamplecontrollerV1() samplecontrollerv1.SamplecontrollerV1Interface {
+	return &fakesamplecontrollerv1.FakeSamplecontrollerV1{Fake: &c.Fake}
 }

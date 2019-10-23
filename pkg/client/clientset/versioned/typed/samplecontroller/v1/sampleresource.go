@@ -39,7 +39,7 @@ type sampleResources struct {
 }
 
 // newSampleResources returns a SampleResources
-func newSampleResources(c *ExampleV1Client, namespace string) *sampleResources {
+func newSampleResources(c *SamplecontrollerV1Client, namespace string) *sampleResources {
 	return &sampleResources{
 		client: c.RESTClient(),
 		ns:     namespace,
