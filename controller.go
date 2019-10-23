@@ -7,6 +7,8 @@ import (
 	informers "github.com/akaimo/sample-controller/pkg/client/informers/externalversions/samplecontroller/v1"
 	listers "github.com/akaimo/sample-controller/pkg/client/listers/samplecontroller/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	jobinformers "k8s.io/client-go/informers/batch/v1"
@@ -152,6 +154,25 @@ func (c *Controller) processNextWorkItem() bool {
 }
 
 func (c *Controller) syncHandler(key string) error {
+	namespace, name, err := cache.SplitMetaNamespaceKey(key)
+	if err != nil {
+		utilruntime.HandleError(fmt.Errorf("invalid resource key: %s", key))
+		return nil
+	}
+
+	sr, err := c.sampleResourceLister.SampleResources(namespace).Get(name)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			utilruntime.HandleError(fmt.Errorf("foo '%s' in work queue no longer exists", key))
+			return nil
+		}
+
+		return err
+	}
+
+	jobList, err := c.jobLister.Jobs(sr.Namespace).List(labels.Everything())
+	klog.Info(jobList)
+
 	return nil
 }
 
