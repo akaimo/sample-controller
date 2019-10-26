@@ -9,3 +9,9 @@ codegen:
 .PHONY: run
 run:
 	go run . -kubeconfig=${HOME}/.kube/config
+
+build:
+	docker build -t akaimo/sample-controller:0.1.0 .
+
+push: build
+	docker push akaimo/sample-controller:0.1.0
