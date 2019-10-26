@@ -172,7 +172,6 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	jobList, err := c.jobLister.Jobs(sr.Namespace).List(labels.Everything())
-	klog.Info(jobList)
 
 	duration, err := time.ParseDuration(sr.Spec.Time)
 	if err != nil {
@@ -209,5 +208,30 @@ type jobManager struct {
 }
 
 func (m jobManager) isDeletable(j *batchv1.Job) bool {
-	return m.now.After(j.Status.CompletionTime.Add(m.deletedDuration))
+	klog.Info(j.Status)
+	if isActive(j) {
+		return false
+	}
+	if !isComplete(j) {
+		return false
+	}
+	return m.now.After(completeTime(j).Add(m.deletedDuration))
+}
+
+func isActive(j *batchv1.Job) bool {
+	return j.Status.Active > 0
+}
+
+func isComplete(j *batchv1.Job) bool {
+	if j.Status.Succeeded == *j.Spec.Completions {
+		return true
+	}
+	if j.Status.Failed == *j.Spec.BackoffLimit + 1 {
+		return true
+	}
+	return false
+}
+
+func completeTime(j *batchv1.Job) time.Time {
+	return j.Status.Conditions[0].LastTransitionTime.Time
 }
