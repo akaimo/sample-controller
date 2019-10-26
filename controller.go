@@ -9,6 +9,7 @@ import (
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -177,7 +178,7 @@ func (c *Controller) syncHandler(key string) error {
 	if err != nil {
 		return err
 	}
-	m := jobManager{now:time.Now(), deletedDuration:duration}
+	m := jobManager{now: time.Now(), deletedDuration: duration}
 	var deleteList []*batchv1.Job
 
 	for _, v := range jobList {
@@ -185,9 +186,19 @@ func (c *Controller) syncHandler(key string) error {
 			deleteList = append(deleteList, v)
 		}
 	}
-	klog.Info(deleteList)
 
-	// TODO: delete job
+	for _, v := range jobList {
+		policy := metav1.DeletePropagationForeground
+		options := &metav1.DeleteOptions{
+			PropagationPolicy: &policy,
+			Preconditions:     &metav1.Preconditions{UID: &v.UID},
+		}
+		klog.V(4).Infof("Cleaning up Job %s/%s", v.Namespace, v.Name)
+		err = c.kubeclientset.BatchV1().Jobs(v.Namespace).Delete(v.Name, options)
+		if err != nil {
+			klog.Error(err)
+		}
+	}
 
 	return nil
 }
@@ -226,7 +237,7 @@ func isComplete(j *batchv1.Job) bool {
 	if j.Status.Succeeded == *j.Spec.Completions {
 		return true
 	}
-	if j.Status.Failed == *j.Spec.BackoffLimit + 1 {
+	if j.Status.Failed == *j.Spec.BackoffLimit+1 {
 		return true
 	}
 	return false
