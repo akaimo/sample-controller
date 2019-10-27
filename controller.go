@@ -178,16 +178,19 @@ func (c *Controller) syncHandler(key string) error {
 	if err != nil {
 		return err
 	}
-	m := jobManager{now: time.Now(), deletedDuration: duration}
 	var deleteList []*batchv1.Job
 
 	for _, v := range jobList {
-		if m.isDeletable(v) {
-			deleteList = append(deleteList, v)
+		if expired, err := c.processTTL(v, duration); err != nil {
+			klog.Error(err)
+			continue
+		} else if !expired {
+			continue
 		}
+		deleteList = append(deleteList, v)
 	}
 
-	for _, v := range jobList {
+	for _, v := range deleteList {
 		policy := metav1.DeletePropagationForeground
 		options := &metav1.DeleteOptions{
 			PropagationPolicy: &policy,
@@ -213,36 +216,72 @@ func (c *Controller) enqueueSampleResource(obj interface{}) {
 	c.workqueue.Add(key)
 }
 
-type jobManager struct {
-	now             time.Time
-	deletedDuration time.Duration
+func (c *Controller) processTTL(job *batchv1.Job, ttl time.Duration) (expired bool, err error) {
+	// We don't care about the Jobs that are going to be deleted, or the ones that don't need clean up.
+	if job.DeletionTimestamp != nil || !isJobFinished(job) {
+		return false, nil
+	}
+
+	//now := tc.clock.Now()
+	now := time.Now()
+	t, err := timeLeft(job, &now, ttl)
+	if err != nil {
+		return false, err
+	}
+
+	// TTL has expired
+	if *t <= 0 {
+		return true, nil
+	}
+
+	return false, nil
 }
 
-func (m jobManager) isDeletable(j *batchv1.Job) bool {
-	klog.Info(j.Status)
-	if isActive(j) {
-		return false
-	}
-	if !isComplete(j) {
-		return false
-	}
-	return m.now.After(completeTime(j).Add(m.deletedDuration))
-}
-
-func isActive(j *batchv1.Job) bool {
-	return j.Status.Active > 0
-}
-
-func isComplete(j *batchv1.Job) bool {
-	if j.Status.Succeeded == *j.Spec.Completions {
-		return true
-	}
-	if j.Status.Failed == *j.Spec.BackoffLimit+1 {
-		return true
+func isJobFinished(j *batchv1.Job) bool {
+	for _, c := range j.Status.Conditions {
+		if (c.Type == batchv1.JobComplete || c.Type == batchv1.JobFailed) && c.Status == corev1.ConditionTrue {
+			return true
+		}
 	}
 	return false
 }
 
-func completeTime(j *batchv1.Job) time.Time {
-	return j.Status.Conditions[0].LastTransitionTime.Time
+func getFinishAndExpireTime(j *batchv1.Job, ttl time.Duration) (*time.Time, *time.Time, error) {
+	if !isJobFinished(j) {
+		return nil, nil, fmt.Errorf("job %s/%s should not be cleaned up", j.Namespace, j.Name)
+	}
+	finishAt, err := jobFinishTime(j)
+	if err != nil {
+		return nil, nil, err
+	}
+	finishAtUTC := finishAt.UTC()
+	expireAtUTC := finishAtUTC.Add(ttl)
+	return &finishAtUTC, &expireAtUTC, nil
+}
+
+func timeLeft(j *batchv1.Job, since *time.Time, ttl time.Duration) (*time.Duration, error) {
+	finishAt, expireAt, err := getFinishAndExpireTime(j, ttl)
+	if err != nil {
+		return nil, err
+	}
+	if finishAt.UTC().After(since.UTC()) {
+		klog.Warningf("Warning: Found Job %s/%s finished in the future. This is likely due to time skew in the cluster. Job cleanup will be deferred.", j.Namespace, j.Name)
+	}
+	remaining := expireAt.UTC().Sub(since.UTC())
+	klog.V(4).Infof("Found Job %s/%s finished at %v, remaining TTL %v since %v, TTL will expire at %v", j.Namespace, j.Name, finishAt.UTC(), remaining, since.UTC(), expireAt.UTC())
+	return &remaining, nil
+}
+
+func jobFinishTime(finishedJob *batchv1.Job) (metav1.Time, error) {
+	for _, c := range finishedJob.Status.Conditions {
+		if (c.Type == batchv1.JobComplete || c.Type == batchv1.JobFailed) && c.Status == corev1.ConditionTrue {
+			finishAt := c.LastTransitionTime
+			if finishAt.IsZero() {
+				return metav1.Time{}, fmt.Errorf("unable to find the time when the Job %s/%s finished", finishedJob.Namespace, finishedJob.Name)
+			}
+			return c.LastTransitionTime, nil
+		}
+	}
+
+	return metav1.Time{}, fmt.Errorf("unable to find the status of the finished Job %s/%s", finishedJob.Namespace, finishedJob.Name)
 }
