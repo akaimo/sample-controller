@@ -13,9 +13,11 @@ rules:
       - "samplecontroller.k8s.io"
       - "batch"
     resources:
+      - "sampleresources"
       - "jobs"
     verbs:
       - "list"
+      - "watch"
       - "delete"
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
