@@ -1,6 +1,5 @@
-FROM golang:1.12.9 as builder
+FROM golang:1.13.3 as builder
 
-ENV GO111MODULE=on
 WORKDIR /go/src/github.com/akaimo.com/sample-controller
 
 COPY go.mod .
