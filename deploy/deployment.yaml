@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-controller
+  labels:
+    app: sample-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-controller
+  template:
+    metadata:
+      labels:
+        app: sample-controller
+    spec:
+#      serviceAccount: sample-controller
+      containers:
+        - name: sample-controller
+          image: akaimo/sample-controller:0.1.0
+          imagePullPolicy: Always
