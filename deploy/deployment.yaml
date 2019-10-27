@@ -14,7 +14,7 @@ spec:
       labels:
         app: sample-controller
     spec:
-#      serviceAccount: sample-controller
+      serviceAccount: sample-controller
       containers:
         - name: sample-controller
           image: akaimo/sample-controller:0.1.0
