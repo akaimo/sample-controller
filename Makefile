@@ -17,4 +17,4 @@ push: build
 	docker push akaimo/sample-controller:0.1.0
 
 template:
-	helm template ./helm --name-template sample-controller --namespace sample-controller 
+	helm template ./helm --name-template sample-controller --namespace sample-controller > ./artifacts/sample-controller.yaml 
