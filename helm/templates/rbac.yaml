@@ -1,7 +1,10 @@
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-  name: sample-controller
+  name: {{ template "sample-controller.name" . }}
+  labels:
+    app: {{ template "sample-controller.name" . }}
+    helm.sh/chart: {{ template "sample-controller.chart" . }}
 rules:
   - apiGroups:
       - "samplecontroller.k8s.io"
@@ -17,12 +20,15 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: sample-controller
+  name: {{ template "sample-controller.name" . }}
+  labels:
+    app: {{ template "sample-controller.name" . }}
+    helm.sh/chart: {{ template "sample-controller.chart" . }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: sample-controller
+  name: {{ template "sample-controller.name" . }}
 subjects:
   - kind: ServiceAccount
-    name: sample-controller
-    namespace: default
+    name: {{ template "sample-controller.name" . }}
+    namespace: {{ .Release.Namespace | quote }}
