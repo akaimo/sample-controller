@@ -20,5 +20,5 @@ spec:
       serviceAccount: {{ template "sample-controller.name" . }}
       containers:
         - name: {{ .Chart.Name }}
-          image: akaimo/sample-controller:0.1.0
-          imagePullPolicy: Always
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}

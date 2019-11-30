@@ -1,0 +1,4 @@
+image:
+  repository: akaimo/sample-controller
+  tag: 0.1.0
+  pullPolicy: Always
