@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "sample-controller.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
   labels:
     app: {{ template "sample-controller.name" . }}
     helm.sh/chart: {{ template "sample-controller.chart" . }}
