@@ -1,21 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: sample-controller
+  name: {{ template "sample-controller.name" . }}
   labels:
-    app: sample-controller
+    app: {{ template "sample-controller.name" . }}
+    helm.sh/chart: {{ template "sample-controller.chart" . }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: sample-controller
+      app: {{ template "sample-controller.name" . }}
+      helm.sh/chart: {{ template "sample-controller.chart" . }}
   template:
     metadata:
       labels:
-        app: sample-controller
+        app: {{ template "sample-controller.name" . }}
+        helm.sh/chart: {{ template "sample-controller.chart" . }}
     spec:
-      serviceAccount: sample-controller
+      serviceAccount: {{ template "sample-controller.name" . }}
       containers:
-        - name: sample-controller
+        - name: {{ .Chart.Name }}
           image: akaimo/sample-controller:0.1.0
           imagePullPolicy: Always
