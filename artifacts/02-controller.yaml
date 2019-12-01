@@ -8,7 +8,6 @@ metadata:
   labels:
     app: sample-controller
     helm.sh/chart: sample-controller-0.1.0
-
 ---
 # Source: sample-controller/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
@@ -30,6 +29,7 @@ rules:
       - "watch"
       - "delete"
 ---
+# Source: sample-controller/templates/rbac.yaml
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
@@ -45,7 +45,6 @@ subjects:
   - kind: ServiceAccount
     name: sample-controller
     namespace: "sample-controller"
-
 ---
 # Source: sample-controller/templates/deployment.yaml
 apiVersion: apps/v1
@@ -73,4 +72,3 @@ spec:
         - name: sample-controller
           image: "akaimo/sample-controller:0.1.0"
           imagePullPolicy: Always
-
