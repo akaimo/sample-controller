@@ -1,0 +1,76 @@
+---
+# Source: sample-controller/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: sample-controller
+  namespace: "sample-controller"
+  labels:
+    app: sample-controller
+    helm.sh/chart: sample-controller-0.1.0
+
+---
+# Source: sample-controller/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: sample-controller
+  labels:
+    app: sample-controller
+    helm.sh/chart: sample-controller-0.1.0
+rules:
+  - apiGroups:
+      - "samplecontroller.k8s.io"
+      - "batch"
+    resources:
+      - "sampleresources"
+      - "jobs"
+    verbs:
+      - "list"
+      - "watch"
+      - "delete"
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: sample-controller
+  labels:
+    app: sample-controller
+    helm.sh/chart: sample-controller-0.1.0
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: sample-controller
+subjects:
+  - kind: ServiceAccount
+    name: sample-controller
+    namespace: "sample-controller"
+
+---
+# Source: sample-controller/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-controller
+  namespace: "sample-controller"
+  labels:
+    app: sample-controller
+    helm.sh/chart: sample-controller-0.1.0
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-controller
+      helm.sh/chart: sample-controller-0.1.0
+  template:
+    metadata:
+      labels:
+        app: sample-controller
+        helm.sh/chart: sample-controller-0.1.0
+    spec:
+      serviceAccount: sample-controller
+      containers:
+        - name: sample-controller
+          image: "akaimo/sample-controller:0.1.0"
+          imagePullPolicy: Always
+

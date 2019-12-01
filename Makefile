@@ -15,3 +15,7 @@ build:
 
 push: build
 	docker push akaimo/sample-controller:0.1.0
+
+gen-template:
+	helm template ./helm --name-template sample-controller --namespace sample-controller > ./artifacts/02-controller.yaml 
+	cp ./helm/crds/sample-controller.yaml ./artifacts/00-crds.yaml

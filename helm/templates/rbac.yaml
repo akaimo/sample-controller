@@ -1,0 +1,34 @@
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: {{ template "sample-controller.name" . }}
+  labels:
+    app: {{ template "sample-controller.name" . }}
+    helm.sh/chart: {{ template "sample-controller.chart" . }}
+rules:
+  - apiGroups:
+      - "samplecontroller.k8s.io"
+      - "batch"
+    resources:
+      - "sampleresources"
+      - "jobs"
+    verbs:
+      - "list"
+      - "watch"
+      - "delete"
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "sample-controller.name" . }}
+  labels:
+    app: {{ template "sample-controller.name" . }}
+    helm.sh/chart: {{ template "sample-controller.chart" . }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "sample-controller.name" . }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ template "sample-controller.name" . }}
+    namespace: {{ .Release.Namespace | quote }}

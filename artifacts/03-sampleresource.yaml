@@ -2,5 +2,6 @@ apiVersion: samplecontroller.k8s.io/v1
 kind: SampleResource
 metadata:
   name: test
+  namespace: default
 spec:
   time: "1m"

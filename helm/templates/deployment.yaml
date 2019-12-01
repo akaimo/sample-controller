@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "sample-controller.name" . }}
+  namespace: {{ .Release.Namespace | quote }}
+  labels:
+    app: {{ template "sample-controller.name" . }}
+    helm.sh/chart: {{ template "sample-controller.chart" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ template "sample-controller.name" . }}
+      helm.sh/chart: {{ template "sample-controller.chart" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "sample-controller.name" . }}
+        helm.sh/chart: {{ template "sample-controller.chart" . }}
+    spec:
+      serviceAccount: {{ template "sample-controller.name" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
